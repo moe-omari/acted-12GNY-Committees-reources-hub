@@ -12,8 +12,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body,
-    icon: "/logo-acted-blanc.png",
-    badge: "/logo-acted-blanc.png",
+    icon: "/acted-logo-notification.PNG",
+    badge: "/acted-logo-notification.PNG",
     dir: isArabic ? "rtl" : "ltr",
     data: { url: data.url || "/" },
   };
