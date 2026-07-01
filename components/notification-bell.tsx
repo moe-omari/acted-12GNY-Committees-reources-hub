@@ -13,8 +13,10 @@ function urlBase64ToUint8Array(base64: string): ArrayBuffer {
 
 type State = "unsupported" | "denied" | "subscribed" | "unsubscribed" | "loading";
 
+
 export function NotificationBell() {
   const [state, setState] = useState<State>("loading");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (
@@ -60,6 +62,8 @@ export function NotificationBell() {
       setState("subscribed");
     } catch (err) {
       console.error("[bell] subscribe failed:", err);
+      const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      setErrorMsg(msg);
       setState(Notification.permission === "denied" ? "denied" : "unsubscribed");
     }
   }
@@ -89,14 +93,20 @@ export function NotificationBell() {
   const isLoading = state === "loading";
 
   return (
-    <button
-      type="button"
-      className={`notification-bell${isSubscribed ? " notification-bell--on" : ""}`}
-      onClick={isSubscribed ? unsubscribe : subscribe}
-      disabled={isLoading}
-      title={isSubscribed ? "Disable notifications" : "Enable notifications"}
-      aria-label={isSubscribed ? "Disable notifications" : "Enable notifications"}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+      {errorMsg && (
+        <div style={{ fontSize: 11, background: "#fee", color: "#c00", padding: "4px 8px", borderRadius: 6, maxWidth: 280, wordBreak: "break-word" }}>
+          {errorMsg}
+        </div>
+      )}
+      <button
+        type="button"
+        className={`notification-bell${isSubscribed ? " notification-bell--on" : ""}`}
+        onClick={isSubscribed ? unsubscribe : subscribe}
+        disabled={isLoading}
+        title={isSubscribed ? "Disable notifications" : "Enable notifications"}
+        aria-label={isSubscribed ? "Disable notifications" : "Enable notifications"}
+      >
       {isSubscribed ? (
         // Bell with ring (active)
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -110,5 +120,6 @@ export function NotificationBell() {
         </svg>
       )}
     </button>
+    </div>
   );
 }
