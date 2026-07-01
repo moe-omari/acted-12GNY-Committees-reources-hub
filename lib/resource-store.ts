@@ -12,6 +12,9 @@ import {
 // metadata. When it is absent (local dev) we fall back to the filesystem.
 const USE_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
+// Cache the downloadUrl after the first write/read so subsequent reads skip list()
+let cachedDownloadUrl: string | null = null;
+
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "resources.json");
 const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
@@ -77,17 +80,24 @@ function parseTagList(value: FormDataEntryValue | null): string[] {
 
 async function readResources(): Promise<ResourceItem[]> {
   if (USE_BLOB) {
-    // Fetch metadata JSON from Vercel Blob storage.
-    // list() gives us the downloadUrl which bypasses CDN caching.
-    const { blobs } = await list({ prefix: BLOB_METADATA_PATH });
-    if (blobs.length === 0) return [];
-
     try {
-      const response = await fetch(blobs[0].downloadUrl);
-      if (!response.ok) return [];
+      // Use cached downloadUrl to skip the list() API call when possible
+      let url = cachedDownloadUrl;
+      if (!url) {
+        const { blobs } = await list({ prefix: BLOB_METADATA_PATH });
+        if (blobs.length === 0) return [];
+        url = blobs[0].downloadUrl;
+        cachedDownloadUrl = url;
+      }
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) {
+        cachedDownloadUrl = null;
+        return [];
+      }
       const parsed = (await response.json()) as Array<Partial<ResourceItem>>;
       return normalizeResourceList(parsed);
     } catch {
+      cachedDownloadUrl = null;
       return [];
     }
   }
@@ -126,12 +136,14 @@ async function writeResources(resources: ResourceItem[]) {
   const json = JSON.stringify(resources, null, 2);
 
   if (USE_BLOB) {
-    await put(BLOB_METADATA_PATH, json, {
+    const result = await put(BLOB_METADATA_PATH, json, {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json",
     });
+    // Cache the downloadUrl so the next read skips list()
+    cachedDownloadUrl = result.downloadUrl;
     return;
   }
 

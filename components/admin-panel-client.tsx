@@ -217,9 +217,9 @@ export function AdminPanelClient({ initialResources }: { initialResources: Resou
         body: payload,
       });
 
-      let data: { error?: string } = {};
+      let data: { error?: string; resource?: ResourceItem } = {};
       try {
-        data = (await response.json()) as { error?: string };
+        data = (await response.json()) as { error?: string; resource?: ResourceItem };
       } catch {
         if (!response.ok) throw new Error(`Upload failed (${response.status})`);
       }
@@ -241,7 +241,12 @@ export function AdminPanelClient({ initialResources }: { initialResources: Resou
       setTagArInput("");
       setFile(null);
       setMessage("Resource saved successfully.");
-      await refreshResources();
+      // Optimistically prepend the new resource — no extra round-trip needed
+      if (data.resource) {
+        setResources((prev) => [data.resource!, ...prev]);
+      } else {
+        await refreshResources();
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to save resource.");
     } finally {
