@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicResourceById } from "@/lib/resource-store";
+import { PdfViewer } from "@/components/pdf-viewer";
 
 function pickText(primary: string, fallback: string) {
   return primary.trim() || fallback.trim();
@@ -53,21 +54,7 @@ export default async function ResourceDetailPage({
 
           {isPdf ? (
             <div className="resource-preview-shell">
-              {/* Desktop: inline iframe */}
-              <iframe
-                title={titleEn}
-                src={fileUrl}
-                className="resource-pdf-frame"
-              />
-              {/* Mobile: iframe doesn't render PDFs — show an open button instead */}
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="resource-pdf-mobile-open"
-              >
-                📄 افتح ملف PDF / Open PDF
-              </a>
+              <PdfViewer url={fileUrl} title={titleEn} />
             </div>
           ) : null}
 
