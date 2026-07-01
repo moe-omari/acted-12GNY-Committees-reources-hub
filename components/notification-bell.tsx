@@ -44,7 +44,7 @@ export function NotificationBell() {
 
   async function subscribe() {
     const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!key) { alert("No VAPID key — cannot subscribe."); return; }
+    if (!key) return;
     setState("loading");
     try {
       await navigator.serviceWorker.register("/sw.js");
@@ -60,13 +60,8 @@ export function NotificationBell() {
       });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       setState("subscribed");
-      // eslint-disable-next-line no-alert
-      alert("Subscribed! Endpoint: " + sub.endpoint.slice(0, 50));
     } catch (err) {
-      console.error("[bell] subscribe failed:", err);
       const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-      // eslint-disable-next-line no-alert
-      alert(`Subscribe error:\n${msg}`);
       setErrorMsg(msg);
       setState(Notification.permission === "denied" ? "denied" : "unsubscribed");
     }

@@ -65,8 +65,10 @@ export async function removeSubscription(endpoint: string): Promise<void> {
 }
 
 export async function sendNotificationToAll(payload: {
-  title: string;
-  body: string;
+  titleEn: string;
+  titleAr: string;
+  bodyEn: string;
+  bodyAr: string;
   url?: string;
 }): Promise<void> {
   const { NEXT_PUBLIC_VAPID_PUBLIC_KEY: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT } = process.env;
@@ -85,7 +87,6 @@ export async function sendNotificationToAll(payload: {
   );
 
   const subs = await readSubs();
-  console.log(`[push] Sending to ${subs.length} subscribers.`);
   if (subs.length === 0) return;
 
   const expired: string[] = [];
@@ -96,7 +97,6 @@ export async function sendNotificationToAll(payload: {
         await webpush.sendNotification(sub, JSON.stringify(payload));
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
-        console.error(`[push] Failed to send to ${sub.endpoint.slice(0, 40)}: status=${status}`, err);
         if (status === 410 || status === 404) {
           expired.push(sub.endpoint);
         }

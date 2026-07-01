@@ -93,8 +93,10 @@ export async function POST() {
   let errorMsg: string | null = null;
   try {
     await sendNotificationToAll({
-      title: "Test Notification",
-      body: "Push notifications are working!",
+      titleEn: "Test Notification",
+      titleAr: "إشعار تجريبي",
+      bodyEn: "Push notifications are working!",
+      bodyAr: "الإشعارات تعمل بشكل صحيح!",
       url: "/",
     });
   } catch (e) {

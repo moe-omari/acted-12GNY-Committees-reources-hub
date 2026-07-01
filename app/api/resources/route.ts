@@ -10,6 +10,18 @@ import {
 import { sendNotificationToAll } from "@/lib/push-store";
 import type { ResourceItem } from "@/lib/resource-types";
 
+function buildNotificationPayload(resource: ResourceItem, url: string) {
+  const nameEn = resource.titleEn || resource.originalName || "New Resource";
+  const nameAr = resource.titleAr || resource.originalName || "مورد جديد";
+  return {
+    titleEn: "📢 New Resource Available",
+    titleAr: "📢 مورد جديد متاح",
+    bodyEn: `Dear committee member, a new resource has been added:\n"${nameEn}"`,
+    bodyAr: `عزيزي عضو اللجنة، تمت إضافة مورد جديد:\n"${nameAr}"`,
+    url,
+  };
+}
+
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
@@ -33,11 +45,7 @@ export async function POST(request: Request) {
       const url = typeof formData.get("url") === "string" ? String(formData.get("url")) : "";
       const resource = await createUrlResource(payload, url);
       // Fire-and-forget — don't block the response
-      void sendNotificationToAll({
-        title: resource.titleEn || resource.titleAr || "New Resource",
-        body: resource.descriptionEn || resource.descriptionAr || "A new resource has been published.",
-        url: "/",
-      });
+      void sendNotificationToAll(buildNotificationPayload(resource, "/"));
       return NextResponse.json({ resource }, { status: 201 });
     }
 
@@ -48,11 +56,7 @@ export async function POST(request: Request) {
     if (typeof storedPath === "string" && storedPath && typeof originalName === "string") {
       const fileType = (fileTypeField as ResourceItem["fileType"]) || "other";
       const resource = await createPreUploadedFileResource(payload, storedPath, originalName, fileType);
-      void sendNotificationToAll({
-        title: resource.titleEn || resource.titleAr || "New Resource",
-        body: resource.descriptionEn || resource.descriptionAr || "A new resource has been published.",
-        url: `/resources/${resource.id}`,
-      });
+      void sendNotificationToAll(buildNotificationPayload(resource, `/resources/${resource.id}`));
       return NextResponse.json({ resource }, { status: 201 });
     }
 
@@ -66,11 +70,7 @@ export async function POST(request: Request) {
     }
 
     const resource = await createFileResource(payload, fileCandidate);
-    void sendNotificationToAll({
-      title: resource.titleEn || resource.titleAr || "New Resource",
-      body: resource.descriptionEn || resource.descriptionAr || "A new resource has been published.",
-      url: resource.kind === "file" ? `/resources/${resource.id}` : "/",
-    });
+    void sendNotificationToAll(buildNotificationPayload(resource, resource.kind === "file" ? `/resources/${resource.id}` : "/"));
     return NextResponse.json({ resource }, { status: 201 });
   } catch (error) {
     const message =
