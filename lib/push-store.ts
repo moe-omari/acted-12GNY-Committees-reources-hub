@@ -5,6 +5,8 @@ import webpush from "web-push";
 
 const USE_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 const BLOB_SUBS_PATH = "data/subscriptions.json";
+
+let cachedSubsUrl: string | null = null;
 const DATA_DIR = path.join(process.cwd(), "data");
 const SUBS_FILE = path.join(DATA_DIR, "subscriptions.json");
 
@@ -16,13 +18,22 @@ type StoredSubscription = {
 
 async function readSubs(): Promise<StoredSubscription[]> {
   if (USE_BLOB) {
-    const { blobs } = await list({ prefix: BLOB_SUBS_PATH });
-    if (blobs.length === 0) return [];
     try {
-      const res = await fetch(blobs[0].downloadUrl);
-      if (!res.ok) return [];
+      let url = cachedSubsUrl;
+      if (!url) {
+        const { blobs } = await list({ prefix: BLOB_SUBS_PATH });
+        if (blobs.length === 0) return [];
+        url = blobs[0].downloadUrl;
+        cachedSubsUrl = url;
+      }
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) {
+        cachedSubsUrl = null;
+        return [];
+      }
       return (await res.json()) as StoredSubscription[];
     } catch {
+      cachedSubsUrl = null;
       return [];
     }
   }
@@ -39,12 +50,13 @@ async function readSubs(): Promise<StoredSubscription[]> {
 async function writeSubs(subs: StoredSubscription[]): Promise<void> {
   const json = JSON.stringify(subs, null, 2);
   if (USE_BLOB) {
-    await put(BLOB_SUBS_PATH, json, {
+    const result = await put(BLOB_SUBS_PATH, json, {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json",
     });
+    cachedSubsUrl = result.downloadUrl;
     return;
   }
   await mkdir(DATA_DIR, { recursive: true });
@@ -97,6 +109,7 @@ export async function sendNotificationToAll(payload: {
         await webpush.sendNotification(sub, JSON.stringify(payload));
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
+        console.error("[push] send failed:", sub.endpoint.slice(0, 40), "status:", status, String(err));
         if (status === 410 || status === 404) {
           expired.push(sub.endpoint);
         }

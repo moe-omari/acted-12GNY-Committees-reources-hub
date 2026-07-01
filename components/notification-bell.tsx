@@ -33,12 +33,10 @@ function saveState(s: State) {
 }
 
 export function NotificationBell() {
-  // Initialize from localStorage so the bell renders in the correct state
-  // immediately on page load — no disabled flash for returning users.
-  const [state, setState] = useState<State>(() => {
-    if (typeof window === "undefined") return "loading";
-    return readStoredState();
-  });
+  // Must start with the same value on server and client to avoid hydration mismatch.
+  // localStorage is read inside useEffect (client-only) not in the initializer.
+  const [state, setState] = useState<State>("loading");
+  const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,9 +55,13 @@ export function NotificationBell() {
       return;
     }
 
-    // Register SW then verify the actual subscription status.
-    // We keep the localStorage value visible until this resolves,
-    // so there is no disabled-button flash on repeat visits.
+    // Show last-known state from localStorage immediately (sync, < 1ms).
+    // This makes the bell appear in the correct visual state before the SW
+    // async check completes, avoiding any disabled / wrong-state flash.
+    const stored = readStoredState();
+    if (stored !== "loading") setState(stored);
+
+    // Verify the actual push subscription in the background and correct if needed.
     navigator.serviceWorker
       .register("/sw.js")
       .then(() => navigator.serviceWorker.ready)
@@ -75,7 +77,8 @@ export function NotificationBell() {
   async function subscribe() {
     const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     if (!key) return;
-    setState("loading");
+    setBusy(true);
+    setErrorMsg(null);
     try {
       await navigator.serviceWorker.register("/sw.js");
       const readyReg = await navigator.serviceWorker.ready;
@@ -95,11 +98,13 @@ export function NotificationBell() {
       const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
       setErrorMsg(msg);
       setState(Notification.permission === "denied" ? "denied" : "unsubscribed");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function unsubscribe() {
-    setState("loading");
+    setBusy(true);
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
@@ -116,13 +121,16 @@ export function NotificationBell() {
     } catch {
       saveState("unsubscribed");
       setState("unsubscribed");
+    } finally {
+      setBusy(false);
     }
   }
 
-  if (state === "unsupported" || state === "denied") return null;
+  // Hide completely during initial check — no disabled-button flash.
+  // Once useEffect reads localStorage (<1ms) the bell appears in the correct state.
+  if (state === "loading" || state === "unsupported" || state === "denied") return null;
 
   const isSubscribed = state === "subscribed";
-  const isLoading = state === "loading";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
@@ -135,7 +143,7 @@ export function NotificationBell() {
         type="button"
         className={`notification-bell${isSubscribed ? " notification-bell--on" : ""}`}
         onClick={isSubscribed ? unsubscribe : subscribe}
-        disabled={isLoading}
+        disabled={busy}
         title={isSubscribed ? "Disable notifications" : "Enable notifications"}
         aria-label={isSubscribed ? "Disable notifications" : "Enable notifications"}
       >
