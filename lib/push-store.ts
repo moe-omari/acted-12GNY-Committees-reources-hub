@@ -42,6 +42,7 @@ async function writeSubs(subs: StoredSubscription[]): Promise<void> {
     await put(BLOB_SUBS_PATH, json, {
       access: "public",
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: "application/json",
     });
     return;
@@ -68,7 +69,7 @@ export async function sendNotificationToAll(payload: {
   body: string;
   url?: string;
 }): Promise<void> {
-  const { VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT } = process.env;
+  const { NEXT_PUBLIC_VAPID_PUBLIC_KEY: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT } = process.env;
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return;
 
   webpush.setVapidDetails(
