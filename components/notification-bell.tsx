@@ -11,34 +11,21 @@ function urlBase64ToUint8Array(base64: string): ArrayBuffer {
   return buf.buffer;
 }
 
-type State = "unsupported" | "ios-hint" | "denied" | "subscribed" | "unsubscribed" | "loading";
+type State = "unsupported" | "denied" | "subscribed" | "unsubscribed" | "loading";
 
-function isIOS() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
-
-function isStandalone() {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true)
-  );
-}
 
 export function NotificationBell() {
   const [state, setState] = useState<State>("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") { setState("unsupported"); return; }
-    if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) { setState("unsupported"); return; }
-
-    // iOS needs the site added to Home Screen first
-    if (isIOS() && !isStandalone()) {
-      setState("ios-hint");
-      return;
-    }
-
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (
+      typeof window === "undefined" ||
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window) ||
+      !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState("unsupported");
       return;
     }
@@ -100,19 +87,6 @@ export function NotificationBell() {
   }
 
   if (state === "unsupported" || state === "denied") return null;
-
-  // iOS Safari in browser: show add-to-home-screen hint instead of bell
-  if (state === "ios-hint") {
-    return (
-      <div title="To receive notifications on iPhone, add this site to your Home Screen via the Share menu" style={{ fontSize: 11, opacity: 0.7, cursor: "default", display: "flex", alignItems: "center", gap: 4 }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 01-3.46 0"/>
-        </svg>
-        <span>Add to Home Screen</span>
-      </div>
-    );
-  }
 
   const isSubscribed = state === "subscribed";
   const isLoading = state === "loading";
