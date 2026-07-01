@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { upload } from "@vercel/blob/client";
 import {
   ChangeEvent,
   FormEvent,
@@ -210,7 +211,19 @@ export default function CpAdminPage() {
       if (resourceMode === "url") {
         payload.set("url", form.url);
       } else if (file) {
-        payload.set("file", file);
+        // Upload file directly to Vercel Blob (bypasses serverless body size limit)
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        payload.set("storedPath", blob.url);
+        payload.set("originalName", file.name);
+        const ft = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+          ? "pdf"
+          : file.type.startsWith("image/")
+          ? "image"
+          : "other";
+        payload.set("fileType", ft);
       }
 
       const response = await fetch("/api/resources", {
@@ -218,7 +231,12 @@ export default function CpAdminPage() {
         body: payload,
       });
 
-      const data = (await response.json()) as { error?: string };
+      let data: { error?: string } = {};
+      try {
+        data = (await response.json()) as { error?: string };
+      } catch {
+        if (!response.ok) throw new Error(`Upload failed (${response.status})`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error ?? "Failed to save resource.");

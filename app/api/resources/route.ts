@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import {
   createFileResource,
+  createPreUploadedFileResource,
   createUrlResource,
   listAdminResources,
   listPublicResources,
   parseCreatePayload,
 } from "@/lib/resource-store";
 import { sendNotificationToAll } from "@/lib/push-store";
+import type { ResourceItem } from "@/lib/resource-types";
 
 export const runtime = "nodejs";
 
@@ -35,6 +37,21 @@ export async function POST(request: Request) {
         title: resource.titleEn || resource.titleAr || "New Resource",
         body: resource.descriptionEn || resource.descriptionAr || "A new resource has been published.",
         url: "/",
+      });
+      return NextResponse.json({ resource }, { status: 201 });
+    }
+
+    // Pre-uploaded via client-side blob upload
+    const storedPath = formData.get("storedPath");
+    const originalName = formData.get("originalName");
+    const fileTypeField = formData.get("fileType");
+    if (typeof storedPath === "string" && storedPath && typeof originalName === "string") {
+      const fileType = (fileTypeField as ResourceItem["fileType"]) || "other";
+      const resource = await createPreUploadedFileResource(payload, storedPath, originalName, fileType);
+      void sendNotificationToAll({
+        title: resource.titleEn || resource.titleAr || "New Resource",
+        body: resource.descriptionEn || resource.descriptionAr || "A new resource has been published.",
+        url: `/resources/${resource.id}`,
       });
       return NextResponse.json({ resource }, { status: 201 });
     }

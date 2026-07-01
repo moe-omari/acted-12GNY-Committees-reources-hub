@@ -265,6 +265,30 @@ export async function createFileResource(
   return created;
 }
 
+export async function createPreUploadedFileResource(
+  payload: ResourceCreatePayload,
+  blobUrl: string,
+  originalName: string,
+  fileType: ResourceItem["fileType"],
+): Promise<ResourceItem> {
+  const now = new Date().toISOString();
+  const resources = await readResources();
+  const created: ResourceItem = {
+    id: randomUUID(),
+    kind: "file",
+    fileType,
+    ...buildMeta(payload),
+    url: "",
+    storedPath: blobUrl,
+    originalName,
+    createdAt: now,
+    updatedAt: now,
+  };
+  resources.unshift(created);
+  await writeResources(resources);
+  return created;
+}
+
 export async function updateResource(
   id: string,
   updates: ResourceUpdatePayload,
