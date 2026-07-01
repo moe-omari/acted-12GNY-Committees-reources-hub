@@ -45,19 +45,21 @@ export function NotificationBell() {
     if (!key) return;
     setState("loading");
     try {
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
+      await navigator.serviceWorker.register("/sw.js");
+      const readyReg = await navigator.serviceWorker.ready;
+      const sub = await readyReg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(key),
       });
-      await fetch("/api/push/subscribe", {
+      const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sub.toJSON()),
       });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
       setState("subscribed");
-    } catch {
+    } catch (err) {
+      console.error("[bell] subscribe failed:", err);
       setState(Notification.permission === "denied" ? "denied" : "unsubscribed");
     }
   }
