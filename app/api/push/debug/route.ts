@@ -90,9 +90,10 @@ export async function POST() {
 
   const { sendNotificationToAll } = await import("@/lib/push-store");
 
+  let results: unknown[] = [];
   let errorMsg: string | null = null;
   try {
-    await sendNotificationToAll({
+    results = await sendNotificationToAll({
       titleEn: "Test Notification",
       titleAr: "إشعار تجريبي",
       bodyEn: "Push notifications are working!",
@@ -103,5 +104,9 @@ export async function POST() {
     errorMsg = String(e);
   }
 
-  return NextResponse.json({ sent: !errorMsg, error: errorMsg });
+  return NextResponse.json({
+    sent: results.length > 0,
+    error: errorMsg,
+    results, // ← per-subscription: {endpoint, ok, status, error}
+  });
 }
