@@ -41,7 +41,7 @@ const labels = {
   loading: "Loading...",
   noResources: "No resources yet.",
   delete: "Delete",
-  new: "New (24h)",
+  new: "New (3 days)",
 };
 
 function normalizeTag(value: string) {
