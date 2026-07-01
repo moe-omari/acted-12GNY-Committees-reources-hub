@@ -387,6 +387,35 @@ a {
   border: 0;
 }
 
+/* Mobile browsers can't render PDFs in iframes — hide frame, show button */
+.resource-pdf-mobile-open {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .resource-pdf-frame {
+    display: none;
+  }
+  .resource-pdf-mobile-open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--accent, #e8622a);
+    color: #fff;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+  }
+  .resource-pdf-mobile-open:hover {
+    opacity: 0.9;
+  }
+}
+
 .resource-image-preview {
   width: 100%;
   max-height: 76vh;

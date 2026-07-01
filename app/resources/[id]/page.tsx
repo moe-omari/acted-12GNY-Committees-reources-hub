@@ -53,11 +53,21 @@ export default async function ResourceDetailPage({
 
           {isPdf ? (
             <div className="resource-preview-shell">
+              {/* Desktop: inline iframe */}
               <iframe
                 title={titleEn}
                 src={fileUrl}
                 className="resource-pdf-frame"
               />
+              {/* Mobile: iframe doesn't render PDFs — show an open button instead */}
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="resource-pdf-mobile-open"
+              >
+                📄 افتح ملف PDF / Open PDF
+              </a>
             </div>
           ) : null}
 
