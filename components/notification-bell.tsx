@@ -37,6 +37,7 @@ export function NotificationBell() {
 
     navigator.serviceWorker
       .register("/sw.js")
+      .then(() => navigator.serviceWorker.ready)
       .then((reg) => reg.pushManager.getSubscription())
       .then((sub) => setState(sub ? "subscribed" : "unsubscribed"))
       .catch(() => setState("unsupported"));
