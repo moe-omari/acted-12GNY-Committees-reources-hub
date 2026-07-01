@@ -14,8 +14,31 @@ function urlBase64ToUint8Array(base64: string): ArrayBuffer {
 type State = "unsupported" | "denied" | "subscribed" | "unsubscribed" | "loading";
 
 
+const STORAGE_KEY = "push-bell-state";
+
+function readStoredState(): State {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (v === "subscribed" || v === "unsubscribed") return v;
+  } catch {}
+  return "loading";
+}
+
+function saveState(s: State) {
+  try {
+    if (s === "subscribed" || s === "unsubscribed") {
+      localStorage.setItem(STORAGE_KEY, s);
+    }
+  } catch {}
+}
+
 export function NotificationBell() {
-  const [state, setState] = useState<State>("loading");
+  // Initialize from localStorage so the bell renders in the correct state
+  // immediately on page load — no disabled flash for returning users.
+  const [state, setState] = useState<State>(() => {
+    if (typeof window === "undefined") return "loading";
+    return readStoredState();
+  });
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +48,6 @@ export function NotificationBell() {
       !("PushManager" in window) ||
       !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState("unsupported");
       return;
     }
@@ -35,11 +57,18 @@ export function NotificationBell() {
       return;
     }
 
+    // Register SW then verify the actual subscription status.
+    // We keep the localStorage value visible until this resolves,
+    // so there is no disabled-button flash on repeat visits.
     navigator.serviceWorker
       .register("/sw.js")
       .then(() => navigator.serviceWorker.ready)
       .then((reg) => reg.pushManager.getSubscription())
-      .then((sub) => setState(sub ? "subscribed" : "unsubscribed"))
+      .then((sub) => {
+        const next: State = sub ? "subscribed" : "unsubscribed";
+        saveState(next);
+        setState(next);
+      })
       .catch(() => setState("unsupported"));
   }, []);
 
@@ -60,6 +89,7 @@ export function NotificationBell() {
         body: JSON.stringify(sub.toJSON()),
       });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
+      saveState("subscribed");
       setState("subscribed");
     } catch (err) {
       const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
@@ -81,8 +111,10 @@ export function NotificationBell() {
         });
         await sub.unsubscribe();
       }
+      saveState("unsubscribed");
       setState("unsubscribed");
     } catch {
+      saveState("unsubscribed");
       setState("unsubscribed");
     }
   }
