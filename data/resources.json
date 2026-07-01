@@ -1,0 +1,24 @@
+[
+  {
+    "id": "e6ce3164-ae7a-4fdf-a83c-13a416c75d6a",
+    "kind": "file",
+    "fileType": "pdf",
+    "titleEn": "dasd",
+    "titleAr": "asd",
+    "descriptionEn": "das",
+    "descriptionAr": "das",
+    "tagsEn": [
+      "hello",
+      "thing"
+    ],
+    "tagsAr": [
+      "hello"
+    ],
+    "url": "",
+    "storedPath": "/uploads/1782854474087---.pdf",
+    "originalName": "مكافحة ناقلات الامراض.pdf",
+    "visible": true,
+    "createdAt": "2026-06-30T21:21:14.044Z",
+    "updatedAt": "2026-06-30T21:21:14.044Z"
+  }
+]
