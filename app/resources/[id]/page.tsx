@@ -1,9 +1,9 @@
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicResourceById } from "@/lib/resource-store";
 import { PdfViewer } from "@/components/pdf-viewer";
 import { ResourceDetailInfo } from "@/components/resource-detail-info";
+import { ResourceDetailActions } from "@/components/resource-detail-actions";
 
 function pickText(primary: string, fallback: string) {
   return primary.trim() || fallback.trim();
@@ -36,19 +36,12 @@ export default async function ResourceDetailPage({
     <div className="min-h-screen page-shell">
       <main className="container admin-stack">
 
-        {/* Back + Download bar — outside any card */}
-        <div className="detail-top-bar">
-          <Link href="/" className="action-chip inline-flex">
-            ← Back | العودة
-          </Link>
-          <a
-            href={`/api/download/${resource.id}`}
-            download={resource.originalName}
-            className="action-chip inline-flex"
-          >
-            ⬇ Download | تنزيل
-          </a>
-        </div>
+        {/* Language-aware action bar */}
+        <ResourceDetailActions
+          resourceId={resource.id}
+          fileUrl={fileUrl}
+          originalName={resource.originalName || `file-${resource.id}`}
+        />
 
         {/* Language-aware info card (client component reads lang from context) */}
         <ResourceDetailInfo
@@ -81,15 +74,6 @@ export default async function ResourceDetailPage({
               />
             </div>
           )}
-
-          <a
-            href={fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="resource-link"
-          >
-            Open file | فتح الملف
-          </a>
         </section>
 
       </main>

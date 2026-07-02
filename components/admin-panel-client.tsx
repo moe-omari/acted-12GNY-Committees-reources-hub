@@ -13,35 +13,62 @@ import {
 } from "react";
 import { isResourceNew } from "@/lib/resource-time";
 import { ResourceItem } from "@/lib/resource-types";
+import { useLanguage } from "@/components/language-context";
 
 type ResourceMode = "file" | "url";
 type TagLanguage = "en" | "ar";
 
-const labels = {
-  title: "Admin Control Panel | لوحة التحكم",
-  subtitle:
-    "Upload and manage PDFs, images, and links with bilingual metadata and tags.",
-  back: "Back to public page | العودة للصفحة العامة",
-  create: "Add Resource | إضافة مورد",
-  type: "Resource Type | نوع المورد",
-  file: "File upload | رفع ملف",
-  url: "URL link | رابط",
-  titleEn: "Title (English)",
-  titleAr: "العنوان (عربي)",
-  descriptionEn: "Description (English)",
-  descriptionAr: "الوصف (عربي)",
-  tagsEn: "Tags (English)",
-  tagsAr: "الوسوم (عربي)",
-  tagsHintEn: "Type a tag and press Enter",
-  tagsHintAr: "اكتب الوسم ثم اضغط Enter",
-  addTag: "Add",
-  urlLabel: "URL",
-  fileLabel: "File (PDF / Image)",
-  submit: "Save Resource | حفظ",
-  loading: "Loading...",
-  noResources: "No resources yet.",
-  delete: "Delete",
-  new: "New (3 days)",
+const LABELS = {
+  en: {
+    title: "Admin Control Panel",
+    subtitle: "Upload and manage PDFs, images, and links with bilingual metadata and tags.",
+    back: "Back to public page",
+    create: "Add Resource",
+    type: "Resource Type",
+    file: "File upload",
+    url: "URL link",
+    titleEn: "Title (English)",
+    titleAr: "Title (Arabic)",
+    descriptionEn: "Description (English)",
+    descriptionAr: "Description (Arabic)",
+    tagsEn: "Tags (English)",
+    tagsAr: "Tags (Arabic)",
+    tagsHintEn: "Type a tag and press Enter",
+    tagsHintAr: "Type a tag and press Enter",
+    addTag: "Add",
+    urlLabel: "URL",
+    fileLabel: "File (PDF / Image)",
+    submit: "Save Resource",
+    loading: "Loading...",
+    noResources: "No resources yet.",
+    delete: "Delete",
+    new: "New (3 days)",
+  },
+  ar: {
+    title: "لوحة التحكم",
+    subtitle: "رفع وإدارة ملفات PDF والصور والروابط مع البيانات الوصفية والوسوم.",
+    back: "العودة للصفحة العامة",
+    create: "إضافة مورد",
+    type: "نوع المورد",
+    file: "رفع ملف",
+    url: "رابط",
+    titleEn: "العنوان (إنجليزي)",
+    titleAr: "العنوان (عربي)",
+    descriptionEn: "الوصف (إنجليزي)",
+    descriptionAr: "الوصف (عربي)",
+    tagsEn: "الوسوم (إنجليزي)",
+    tagsAr: "الوسوم (عربي)",
+    tagsHintEn: "اكتب الوسم ثم اضغط Enter",
+    tagsHintAr: "اكتب الوسم ثم اضغط Enter",
+    addTag: "إضافة",
+    urlLabel: "الرابط",
+    fileLabel: "ملف (PDF / صورة)",
+    submit: "حفظ",
+    loading: "جارٍ التحميل...",
+    noResources: "لا توجد موارد بعد.",
+    delete: "حذف",
+    new: "جديد (3 أيام)",
+  },
 };
 
 function normalizeTag(value: string) {
@@ -50,6 +77,8 @@ function normalizeTag(value: string) {
 
 export function AdminPanelClient({ initialResources }: { initialResources: ResourceItem[] }) {
   const router = useRouter();
+  const { isArabic } = useLanguage();
+  const labels = isArabic ? LABELS.ar : LABELS.en;
   const [resources, setResources] = useState<ResourceItem[]>(initialResources);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
