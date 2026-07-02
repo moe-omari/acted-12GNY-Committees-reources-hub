@@ -28,37 +28,55 @@ export default async function ResourceDetailPage({
   const isPdf = resource.fileType === "pdf";
   const isImage = resource.fileType === "image";
 
+  const tagsEn = resource.tagsEn ?? [];
+  const tagsAr = resource.tagsAr ?? [];
+  const allTags = Array.from(new Set([...tagsEn, ...tagsAr]));
+
   return (
     <div className="min-h-screen page-shell">
       <main className="container admin-stack">
-        <section className="panel-glass">
-          <div className="hero-header-row">
-            <h1 className="hero-title admin-title">{titleEn}</h1>
-            <Link href="/" className="action-chip">
-              Back | العودة
-            </Link>
+
+        {/* Back button — outside any card */}
+        <div>
+          <Link href="/" className="action-chip inline-flex">
+            ← Back | العودة
+          </Link>
+        </div>
+
+        {/* Single info card: tags + bilingual title + bilingual description */}
+        <section className="panel-glass resource-detail-card">
+          {allTags.length > 0 && (
+            <div className="tag-chip-wrap">
+              {allTags.map((tag) => (
+                <span key={tag} className="tag-chip tag-chip--readonly">{tag}</span>
+              ))}
+            </div>
+          )}
+
+          <div className="resource-detail-titles">
+            <h1 className="resource-detail-title-en">{titleEn}</h1>
+            <h2 className="resource-detail-title-ar" dir="rtl">{titleAr}</h2>
           </div>
-          <p className="hero-subtitle">{descriptionEn || "-"}</p>
+
+          {(descriptionEn || descriptionAr) && (
+            <div className="resource-detail-descs">
+              {descriptionEn && <p className="resource-description">{descriptionEn}</p>}
+              {descriptionAr && <p className="resource-description" dir="rtl">{descriptionAr}</p>}
+            </div>
+          )}
         </section>
 
-        <section className="panel-glass" dir="rtl">
-          <h2 className="form-title">{titleAr}</h2>
-          <p className="resource-description">{descriptionAr || "-"}</p>
-        </section>
-
+        {/* File preview card */}
         <section className="panel-glass resource-card">
           <p className="resource-kind">{resource.fileType.toUpperCase()} FILE</p>
-          <p className="resource-description">
-            Original name: {resource.originalName || "-"}
-          </p>
 
-          {isPdf ? (
+          {isPdf && (
             <div className="resource-preview-shell">
               <PdfViewer url={fileUrl} title={titleEn} />
             </div>
-          ) : null}
+          )}
 
-          {isImage ? (
+          {isImage && (
             <div className="resource-preview-shell">
               <Image
                 src={fileUrl}
@@ -68,7 +86,7 @@ export default async function ResourceDetailPage({
                 className="resource-image-preview"
               />
             </div>
-          ) : null}
+          )}
 
           <a
             href={fileUrl}
@@ -79,6 +97,7 @@ export default async function ResourceDetailPage({
             Open file | فتح الملف
           </a>
         </section>
+
       </main>
     </div>
   );
