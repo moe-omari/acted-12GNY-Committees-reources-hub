@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublicResourceById } from "@/lib/resource-store";
 import { PdfViewer } from "@/components/pdf-viewer";
+import { ResourceDetailInfo } from "@/components/resource-detail-info";
 
 function pickText(primary: string, fallback: string) {
   return primary.trim() || fallback.trim();
@@ -30,7 +31,6 @@ export default async function ResourceDetailPage({
 
   const tagsEn = resource.tagsEn ?? [];
   const tagsAr = resource.tagsAr ?? [];
-  const allTags = Array.from(new Set([...tagsEn, ...tagsAr]));
 
   return (
     <div className="min-h-screen page-shell">
@@ -43,28 +43,15 @@ export default async function ResourceDetailPage({
           </Link>
         </div>
 
-        {/* Single info card: tags + bilingual title + bilingual description */}
-        <section className="panel-glass resource-detail-card">
-          {allTags.length > 0 && (
-            <div className="tag-chip-wrap">
-              {allTags.map((tag) => (
-                <span key={tag} className="tag-chip tag-chip--readonly">{tag}</span>
-              ))}
-            </div>
-          )}
-
-          <div className="resource-detail-titles">
-            <h1 className="resource-detail-title-en">{titleEn}</h1>
-            <h2 className="resource-detail-title-ar" dir="rtl">{titleAr}</h2>
-          </div>
-
-          {(descriptionEn || descriptionAr) && (
-            <div className="resource-detail-descs">
-              {descriptionEn && <p className="resource-description">{descriptionEn}</p>}
-              {descriptionAr && <p className="resource-description" dir="rtl">{descriptionAr}</p>}
-            </div>
-          )}
-        </section>
+        {/* Language-aware info card (client component reads lang from context) */}
+        <ResourceDetailInfo
+          titleEn={titleEn}
+          titleAr={titleAr}
+          descriptionEn={descriptionEn}
+          descriptionAr={descriptionAr}
+          tagsEn={tagsEn}
+          tagsAr={tagsAr}
+        />
 
         {/* File preview card */}
         <section className="panel-glass resource-card">
