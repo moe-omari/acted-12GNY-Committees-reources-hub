@@ -318,6 +318,13 @@ a {
 }
 
 /* ── Resource detail page ───────────────────────────────── */
+.detail-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
 .resource-detail-card {
   display: flex;
   flex-direction: column;
@@ -330,6 +337,32 @@ a {
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--foreground);
+}
+
+/* Mobile: hide iframe (blank on most mobile browsers), show open-in-browser button */
+.pdf-mobile-open-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pdf-viewer-frame {
+    display: none;
+  }
+  .pdf-mobile-open-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--accent, #e8622a);
+    color: #fff;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+  }
 }
 
 .resource-meta-row {

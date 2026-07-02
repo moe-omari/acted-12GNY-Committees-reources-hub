@@ -36,11 +36,18 @@ export default async function ResourceDetailPage({
     <div className="min-h-screen page-shell">
       <main className="container admin-stack">
 
-        {/* Back button — outside any card */}
-        <div>
+        {/* Back + Download bar — outside any card */}
+        <div className="detail-top-bar">
           <Link href="/" className="action-chip inline-flex">
             ← Back | العودة
           </Link>
+          <a
+            href={`/api/download/${resource.id}`}
+            download={resource.originalName}
+            className="action-chip inline-flex"
+          >
+            ⬇ Download | تنزيل
+          </a>
         </div>
 
         {/* Language-aware info card (client component reads lang from context) */}
