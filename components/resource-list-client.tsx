@@ -13,14 +13,14 @@ const content = {
   en: {
     heading: "Site Committee Resource Hub",
     subtitle:
-      "A practical handover library with policy files, visuals, and useful links for long-term site management.",
+      "A comprehensive resource hub for site committee members — featuring official documents, operational policies, working templates, and reference links to support effective and sustainable site management. Search, filter by tag, and download with ease.",
     empty: "No resources are currently published.",
     new: "New",
   },
   ar: {
     heading: "مركز موارد لجنة إدارة الموقع",
     subtitle:
-      "مكتبة تسليم عملية تضم الملفات والسياسات والروابط اللازمة لاستمرار إدارة الموقع بعد الخروج.",
+      "مركز موارد متكامل لأعضاء لجنة إدارة الموقع — يضم الوثائق الرسمية والسياسات التشغيلية ونماذج العمل والروابط المرجعية اللازمة لضمان إدارة فعّالة ومستدامة للموقع. ابحث وصنّف حسب الوسوم ونزّل ما تحتاجه بكل سهولة.",
     empty: "لا توجد موارد منشورة حالياً.",
     new: "جديد",
   },
