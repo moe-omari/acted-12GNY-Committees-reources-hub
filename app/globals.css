@@ -60,7 +60,7 @@ a {
 }
 
 .page-shell {
-  padding: 0 0 3rem;
+  padding: 1.75rem 0 3rem;
 }
 
 .hero-wrap {
@@ -402,21 +402,6 @@ a {
   border-radius: 0.5rem;
   display: block;
   background: #f4f4f4;
-}
-
-.pdf-open-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  background: var(--accent, #e8622a);
-  color: #fff;
-  border-radius: 0.75rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  align-self: flex-start;
 }
 
 /* legacy — kept in case referenced elsewhere */

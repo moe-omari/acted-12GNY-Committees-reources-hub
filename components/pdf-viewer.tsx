@@ -9,14 +9,6 @@ export function PdfViewer({ url, title }: { url: string; title: string }) {
         className="pdf-viewer-frame"
         allow="fullscreen"
       />
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pdf-open-link"
-      >
-        📄 Open PDF / فتح الملف
-      </a>
     </div>
   );
 }
