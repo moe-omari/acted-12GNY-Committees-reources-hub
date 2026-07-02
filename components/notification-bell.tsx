@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-function urlBase64ToUint8Array(base64: string): Uint8Array {
+function urlBase64ToUint8Array(base64: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(b64);
   const buf = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
-  return buf; // Uint8Array — works on all browsers
+  return buf.buffer as ArrayBuffer;
 }
 
 type State = "unsupported" | "denied" | "subscribed" | "unsubscribed" | "loading";
